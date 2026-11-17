@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IPNet Manager</title>
+<style>
+:root{--bg:#f2f5f4;--card:#fff;--ink:#14201d;--mut:#5d6b67;--line:#dbe3e0;--acc:#0f766e;--accfg:#fff;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--okbg:#dcfce7;--warnbg:#fef3c7;--badbg:#fee2e2;--grey:#e8eeec;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1715;--card:#17211e;--ink:#e6efec;--mut:#93a39e;--line:#2a3a35;--acc:#2dd4bf;--accfg:#06201c;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--okbg:#14351f;--warnbg:#3a2c0a;--badbg:#3f1616;--grey:#22302c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1715;--card:#17211e;--ink:#e6efec;--mut:#93a39e;--line:#2a3a35;--acc:#2dd4bf;--accfg:#06201c;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--okbg:#14351f;--warnbg:#3a2c0a;--badbg:#3f1616;--grey:#22302c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px}
+h1{font-size:18px;margin:0;letter-spacing:-.01em}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav a{padding:6px 12px;border-radius:6px;color:var(--mut);text-decoration:none;font-weight:500}
+nav a.on{background:var(--acc);color:var(--accfg)}
+nav a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.top h2{margin:0;font-size:22px;flex:1 1 auto}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 12px;border-radius:6px}
+button.p{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:600}
+button.d{color:var(--bad)}
+input,select,textarea{font:inherit;width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+.top input{width:240px;max-width:100%}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--mut);font-weight:600}
+tr:last-child td{border-bottom:0}
+td small{display:block;color:var(--mut)}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+td.a{white-space:nowrap;text-align:right}
+td.a button{margin-left:4px;padding:3px 9px;font-size:13px}
+.b{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12.5px;font-weight:600;background:var(--grey);color:var(--mut)}
+.b.ok{background:var(--okbg);color:var(--ok)}.b.warn{background:var(--warnbg);color:var(--warn)}.b.bad{background:var(--badbg);color:var(--bad)}
+.vazio{padding:36px;text-align:center;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.st{padding:14px 16px}.st b{display:block;font-size:28px;line-height:1.2}.st span{color:var(--mut)}
+.bar{height:8px;background:var(--grey);border-radius:99px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--acc)}.bar i.hot{background:var(--bad)}
+.rede{padding:12px 16px;border-bottom:1px solid var(--line)}.rede:last-child{border:0}
+.rede div{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:min(520px,94vw);padding:20px;max-height:92vh;overflow:auto}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:0 0 12px}
+label{display:block;margin-bottom:10px;font-weight:500;font-size:14px}
+label input,label select,label textarea{margin-top:3px;font-weight:400}
+.err{background:var(--badbg);color:var(--bad);padding:8px 10px;border-radius:6px;margin-bottom:10px}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.card.sec{padding:14px 16px;margin-bottom:16px}.card h3{margin:0 0 8px;font-size:16px}.card h3.ph{padding:14px 16px 0}.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:16px;align-items:start}.res{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:10px}.mut{color:var(--mut)}.acts{display:flex;flex-wrap:wrap;gap:8px}.b.mono{margin:0 4px 6px 0}
+.rodape{margin-top:24px;color:var(--mut);font-size:13px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<header><h1>IPNet Manager</h1><nav id="nav"></nav></header>
+<main id="app"></main>
+<dialog id="dlg"></dialog>
+<script>
+// ---------- Utilitários de IP (mesmas regras do store.ts original) ----------
+const isValidIp=s=>{const p=s.trim().split('.');return p.length===4&&p.every(x=>/^\d{1,3}$/.test(x)&&+x<=255&&String(+x)===x)};
+const ipInt=s=>s.split('.').reduce((a,p)=>(a<<8)+ +p,0)>>>0;
+const totalIps=c=>c<=30?2**(32-c)-2:2**(32-c);
+const pertence=(ip,r)=>{const m=(0xffffffff<<(32-r.cidr))>>>0;return (ipInt(ip)&m)===(ipInt(r.endereco)&m)};
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);
+
+// ---------- Dados e armazenamento ----------
+const KEY='ipnet-js-v1';
+function seed(){const n=new Date().toISOString();const mk=(id,redeId,endereco,status,hostname='',servico='',observacao='')=>({id,redeId,endereco,status,hostname,servico,observacao});
+return{empresas:[{id:'e1',nome:'Empresa ABC',cnpj:'12.345.678/0001-90',responsavel:'Carlos Silva',telefone:'(11) 99999-0001',email:'contato@empresaabc.com.br',observacao:'',status:'ativa'},{id:'e2',nome:'Empresa XYZ',cnpj:'98.765.432/0001-10',responsavel:'Mariana Souza',telefone:'(11) 99999-0002',email:'ti@xyz.com.br',observacao:'',status:'ativa'}],
+redes:[{id:'r1',empresaId:'e1',endereco:'192.168.10.0',cidr:24,gateway:'192.168.10.1',descricao:'Rede principal',observacao:''},{id:'r2',empresaId:'e2',endereco:'10.20.0.0',cidr:24,gateway:'10.20.0.1',descricao:'Rede corporativa',observacao:''}],
+ips:[mk('i1','r1','192.168.10.2','ocupado','fw-abc-01','Firewall'),mk('i2','r1','192.168.10.3','ocupado','web-abc-01','Servidor Web'),mk('i3','r1','192.168.10.4','livre'),mk('i4','r1','192.168.10.5','reservado','','','Futuro acesso'),mk('i5','r1','192.168.10.6','ocupado','vpn-abc-01','VPN'),mk('i8','r2','10.20.0.2','ocupado','srv-xyz-01','Servidor de arquivos'),mk('i9','r2','10.20.0.3','livre')],
+vpns:[{id:'v1',ipId:'i5',usuario:'empresa-abc-suporte',status:'ativo',criada:n,observacao:'Acesso da equipe de suporte.'}]}}
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!data||!data.empresas)data=seed();
+const cfg=()=>data.config?.alerta??90;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}};
+
+// ---------- Consultas ----------
+const emp=id=>data.empresas.find(x=>x.id===id), rede=id=>data.redes.find(x=>x.id===id), ip=id=>data.ips.find(x=>x.id===id);
+const vpnAtiva=id=>data.vpns.find(v=>v.ipId===id&&v.status==='ativo');
+const rotulo=r=>r?r.endereco+'/'+r.cidr:'—';
+const badge=(t,c='')=>`<span class="b ${c}">${esc(t)}</span>`;
+const stIp=s=>badge(s,{livre:'ok',ocupado:'bad',reservado:'warn'}[s]);
+
+// ---------- Definição de cada cadastro (um motor CRUD para as quatro telas) ----------
+const T={
+empresas:{nome:'Empresas',novo:'Nova empresa',
+ f:[['nome','Nome *'],['cnpj','CNPJ'],['responsavel','Responsável'],['telefone','Telefone'],['email','E-mail'],['status','Status',()=>[['ativa','Ativa'],['inativa','Inativa']]],['observacao','Observações','t']],
+ vazio:()=>({nome:'',cnpj:'',responsavel:'',telefone:'',email:'',status:'ativa',observacao:''}),
+ c:[['Empresa',r=>`<b>${esc(r.nome)}</b><small>${esc(r.cnpj)}</small>`],['Responsável',r=>esc(r.responsavel)],['Redes',r=>data.redes.filter(x=>x.empresaId===r.id).length],['Status',r=>badge(r.status,r.status==='ativa'?'ok':'')]],
+ check:v=>v.nome.trim()?null:'Informe o nome da empresa.',
+ del:r=>data.redes.some(x=>x.empresaId===r.id)?'A empresa possui redes vinculadas. Remova as redes antes.':null},
+redes:{nome:'Redes',novo:'Nova rede',
+ f:[['empresaId','Empresa *',()=>data.empresas.map(e=>[e.id,e.nome])],['endereco','Endereço da rede * (ex: 192.168.10.0)'],['cidr','CIDR * (8 a 30)','n'],['gateway','Gateway'],['descricao','Descrição'],['observacao','Observações','t']],
+ vazio:()=>({empresaId:data.empresas[0]?.id||'',endereco:'',cidr:24,gateway:'',descricao:'',observacao:''}),
+ c:[['Rede',r=>`<span class="mono">${esc(rotulo(r))}</span><small>${esc(r.descricao)}</small>`],['Empresa',r=>esc(emp(r.empresaId)?.nome)],['Gateway',r=>`<span class="mono">${esc(r.gateway)||'—'}</span>`],['IPs',r=>data.ips.filter(i=>i.redeId===r.id).length+' / '+totalIps(r.cidr)]],
+ check:v=>!emp(v.empresaId)?'Selecione uma empresa.':!isValidIp(v.endereco)?'Endereço de rede inválido.':v.gateway&&!isValidIp(v.gateway)?'Gateway inválido.':!(v.cidr>=8&&v.cidr<=30)?'CIDR deve estar entre 8 e 30.':null,
+ del:r=>data.ips.some(i=>i.redeId===r.id)?'A rede possui IPs cadastrados. Remova os IPs antes.':null},
+ips:{nome:'Endereços IP',novo:'Novo IP',
+ f:[['redeId','Rede *',()=>data.redes.map(r=>[r.id,rotulo(r)+' — '+(emp(r.empresaId)?.nome||'')])],['endereco','Endereço IP *'],['status','Status',()=>[['livre','Livre'],['ocupado','Ocupado'],['reservado','Reservado']]],['hostname','Hostname'],['servico','Serviço'],['observacao','Observações','t']],
+ vazio:()=>({redeId:data.redes[0]?.id||'',endereco:'',status:'livre',hostname:'',servico:'',observacao:''}),
+ c:[['IP',r=>`<span class="mono">${esc(r.endereco)}</span><small>${esc(rotulo(rede(r.redeId)))}</small>`],['Empresa',r=>esc(emp(rede(r.redeId)?.empresaId)?.nome)],['Status',r=>stIp(r.status)],['Equipamento',r=>`${esc(r.hostname)||'—'}<small>${esc(r.servico)}</small>`],['VPN',r=>esc(vpnAtiva(r.id)?.usuario)||'—']],
+ check:(v,id)=>{const rd=rede(v.redeId);return !isValidIp(v.endereco)?'Endereço IP inválido.':!rd?'Rede não encontrada.':!pertence(v.endereco,rd)?`O IP ${v.endereco} não pertence à rede ${rotulo(rd)}.`:data.ips.some(i=>i.id!==id&&i.redeId===v.redeId&&i.endereco===v.endereco)?'Este IP já está cadastrado nessa rede.':null},
+ del:r=>vpnAtiva(r.id)?'Este IP possui um acesso VPN ativo. Desative o acesso antes.':null,
+ apos:r=>{data.vpns=data.vpns.filter(v=>v.ipId!==r.id)}},
+vpns:{nome:'Acessos VPN',novo:'Novo acesso VPN',
+ f:[['ipId','IP disponível *',edit=>data.ips.filter(i=>edit?i.id===edit.ipId:!vpnAtiva(i.id)&&(i.status!=='ocupado'||i.servico==='VPN')).map(i=>[i.id,i.endereco+' ('+(emp(rede(i.redeId)?.empresaId)?.nome||'')+')'])],['usuario','Usuário / identificação *'],['observacao','Observações','t']],
+ vazio:()=>({ipId:'',usuario:'',observacao:''}),
+ c:[['Usuário',r=>`<b>${esc(r.usuario)}</b><small>${esc(r.observacao)}</small>`],['IP',r=>`<span class="mono">${esc(ip(r.ipId)?.endereco)}</span>`],['Empresa',r=>esc(emp(rede(ip(r.ipId)?.redeId)?.empresaId)?.nome)],['Status',r=>badge(r.status,r.status==='ativo'?'ok':'')],['Criada',r=>new Date(r.criada).toLocaleDateString('pt-BR')]],
+ check:(v,id)=>{const i=ip(v.ipId);if(!v.usuario.trim())return 'Informe o usuário/identificação do acesso.';if(id)return null;return !i?'Selecione um IP cadastrado.':vpnAtiva(i.id)?'Este IP já possui um acesso VPN ativo.':i.status==='ocupado'&&i.servico!=='VPN'?'Este IP está ocupado por outro serviço.':null},
+ extra:r=>r.status==='ativo'?`<button data-x="off" data-id="${r.id}">Desativar</button>`:'',
+ del:()=>null}
+};
+
+// ---------- Telas ----------
+let tela='painel',busca='';
+function render(){
+ const rotas=['painel',...Object.keys(T),'relatorios','config'],N={painel:'Painel',relatorios:'Relatórios',config:'Configurações'};
+ $('#nav').innerHTML=rotas.map(r=>`<a href="#${r}" class="${r===tela?'on':''}">${N[r]||T[r].nome}</a>`).join('');
+ $('#app').innerHTML=(tela==='painel'?painel():tela==='relatorios'?relatorios():tela==='config'?config():lista(tela))+`<div class="rodape">Dados salvos neste navegador.</div>`;
+}
+function usoRede(r){const u=data.ips.filter(i=>i.redeId===r.id&&i.status!=='livre').length,t=totalIps(r.cidr),p=u/t*100,hot=p>=cfg();
+ return `<div class="rede"><div><span><b class="mono">${esc(rotulo(r))}</b> ${esc(emp(r.empresaId)?.nome)}</span><span>${u} de ${t} em uso (${Math.round(p)}%) ${hot?badge('Acima do limite','bad'):''}</span></div><div class="bar"><i class="${hot?'hot':''}" style="width:${Math.min(100,Math.max(p,u?2:0))}%"></i></div></div>`}
+function painel(){
+ const ocup=data.ips.filter(i=>i.status==='ocupado').length,vpn=data.vpns.filter(v=>v.status==='ativo').length;
+ const st=(n,l)=>`<div class="card st"><b>${n}</b><span>${l}</span></div>`;
+ const redes=data.redes.map(usoRede).join('');
+ return `<div class="top"><h2>Painel</h2></div><div class="grid">${st(data.empresas.length,'empresas')}${st(data.redes.length,'redes')}${st(ocup+' / '+data.ips.length,'IPs ocupados')}${st(vpn,'VPNs ativas')}</div><div class="card">${redes||'<div class="vazio">Cadastre uma rede para ver a ocupação.</div>'}</div>`;
+}
+function lista(k){
+ const t=T[k],q=busca.toLowerCase();
+ const linhas=(data[k]).filter(r=>!q||t.c.map(c=>String(c[1](r))).join(' ').replace(/<[^>]+>/g,' ').toLowerCase().includes(q));
+ const corpo=linhas.map(r=>`<tr>${t.c.map(c=>`<td>${c[1](r)}</td>`).join('')}<td class="a">${t.extra?t.extra(r):''}<button data-x="edit" data-id="${r.id}">Editar</button><button class="d" data-x="del" data-id="${r.id}">Excluir</button></td></tr>`).join('');
+ return `<div class="top"><h2>${t.nome}</h2><input id="busca" type="search" placeholder="Buscar" value="${esc(busca)}" aria-label="Buscar"><button class="p" data-x="new">${t.novo}</button></div><div class="card tw">${linhas.length?`<table><thead><tr>${t.c.map(c=>`<th>${c[0]}</th>`).join('')}<th></th></tr></thead><tbody>${corpo}</tbody></table>`:`<div class="vazio">Nada por aqui ainda. Use “${t.novo}” para começar.</div>`}</div>`;
+}
+
+// ---------- Formulário (modal) ----------
+function abrir(k,edit){
+ const t=T[k],v=edit?{...edit}:t.vazio(),dlg=$('#dlg');
+ const campo=([n,l,tipo])=>{const val=esc(v[n]);
+  if(typeof tipo==='function'){const o=tipo(edit);return `<label>${l}<select name="${n}" ${edit&&k==='vpns'?'disabled':''}>${o.map(x=>`<option value="${esc(x[0])}" ${x[0]===v[n]?'selected':''}>${esc(x[1])}</option>`).join('')||'<option value="">Nenhuma opção disponível</option>'}</select></label>`}
+  if(tipo==='t')return `<label>${l}<textarea name="${n}" rows="2">${val}</textarea></label>`;
+  return `<label>${l}<input name="${n}" value="${val}" ${tipo==='n'?'type="number"':''}></label>`};
+ dlg.innerHTML=`<h3>${edit?'Editar':t.novo}</h3><div id="err"></div>${t.f.map(campo).join('')}<div class="foot"><button data-x="cancel">Cancelar</button><button class="p" data-x="save">Salvar</button></div>`;
+ dlg.dataset.k=k;dlg.dataset.id=edit?.id||'';dlg.showModal();
+}
+function salvar(){
+ const dlg=$('#dlg'),k=dlg.dataset.k,id=dlg.dataset.id,t=T[k],v={};
+ dlg.querySelectorAll('[name]').forEach(el=>{v[el.name]=el.type==='number'?+el.value:el.value});
+ if(id&&k==='vpns')v.ipId=ip(data.vpns.find(x=>x.id===id).ipId).id;
+ const erro=t.check(v,id);
+ if(erro){$('#err').innerHTML=`<div class="err" role="alert">${esc(erro)}</div>`;return}
+ if(id)Object.assign(data[k].find(x=>x.id===id),v);
+ else{data[k].push({id:uid(),...v,...(k==='vpns'?{status:'ativo',criada:new Date().toISOString()}:{})});
+  if(k==='vpns')ip(v.ipId).status='ocupado'}
+ save();dlg.close();render();
+}
+
+// ---------- Eventos ----------
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-x]');if(!b)return;
+ const x=b.dataset.x,id=b.dataset.id,k=tela,t=T[k];
+ if(x==='new')abrir(k);
+ else if(x==='edit')abrir(k,data[k].find(r=>r.id===id));
+ else if(x==='cancel')$('#dlg').close();
+ else if(x==='save')salvar();
+ else if(x==='del'){const r=data[k].find(r=>r.id===id),m=t.del(r);
+  if(m)return alert('Não foi possível excluir. '+m);
+  if(!confirm('Excluir este registro?'))return;
+  data[k]=data[k].filter(r=>r.id!==id);t.apos&&t.apos(r);save();render()}
+ else if(x==='off'){const v=data.vpns.find(r=>r.id===id);
+  if(!confirm('Desativar o acesso de '+v.usuario+'?'))return;
+  v.status='inativo';if(confirm('Liberar também o IP (voltar para “livre”)?'))ip(v.ipId).status='livre';save();render()}
+ else if(x==='exp-csv')exportar('relatorio-ips.csv',csv());
+ else if(x==='exp-json')exportar('backup-ipnet.json',JSON.stringify(data,null,2));
+ else if(x==='copy'){const a=$('#exp');a.select();try{navigator.clipboard.writeText(a.value)}catch(err){document.execCommand('copy')}b.textContent='Copiado'}
+ else if(x==='dl'){const n=b.dataset.n,u=URL.createObjectURL(new Blob([$('#exp').value],{type:n.endsWith('.csv')?'text/csv;charset=utf-8':'application/json'})),l=document.createElement('a');l.href=u;l.download=n;l.click();URL.revokeObjectURL(u)}
+ else if(x==='cfg-save'){const n=+$('#alerta').value;if(!(n>=1&&n<=100)){$('#ok').textContent='Informe um valor de 1 a 100.';return}data.config={alerta:n};save();$('#ok').textContent='Salvo'}
+ else if(x==='seed'){if(confirm('Substituir todos os dados pelo exemplo?')){data={...seed(),config:data.config};save();render()}}
+ else if(x==='clear'){if(confirm('Apagar todos os dados? Não dá para desfazer.')){data={empresas:[],redes:[],ips:[],vpns:[],config:data.config};save();render()}}
+});
+document.addEventListener('input',e=>{if(e.target.id==='qip'){qip=e.target.value;$('#qres').innerHTML=consulta();return}if(e.target.id==='busca'){busca=e.target.value;const p=e.target.selectionStart;render();const i=$('#busca');i.focus();i.setSelectionRange(p,p)}});
+// ---------- Relatórios e configurações ----------
+let qip='';
+function consulta(){const q=qip.trim();if(!q)return '';const rs=data.ips.filter(i=>i.endereco.includes(q));
+ if(!rs.length)return '<p class="mut">Nenhum IP encontrado.</p>';
+ return rs.map(i=>{const r=rede(i.redeId),v=vpnAtiva(i.id);return `<div class="res"><b class="mono">${esc(i.endereco)}</b> ${stIp(i.status)}<br>Empresa: ${esc(emp(r?.empresaId)?.nome)||'—'}<br>Rede: ${esc(rotulo(r))}<br>Equipamento: ${esc(i.hostname)||'—'}, serviço: ${esc(i.servico)||'—'}<br>VPN: ${v?'ativa, '+esc(v.usuario):'não'}<br>Observação: ${esc(i.observacao)||'—'}</div>`}).join('')}
+function relatorios(){const livres=data.ips.filter(i=>i.status==='livre');
+ const resumo=data.empresas.map(e=>{const ids=new Set(data.ips.filter(i=>rede(i.redeId)?.empresaId===e.id).map(i=>i.id)),ips=data.ips.filter(i=>ids.has(i.id));
+  return `<tr><td>${esc(e.nome)}</td><td>${data.redes.filter(r=>r.empresaId===e.id).length}</td><td>${ips.filter(i=>i.status==='ocupado').length}</td><td>${ips.filter(i=>i.status==='livre').length}</td><td>${data.vpns.filter(v=>v.status==='ativo'&&ids.has(v.ipId)).length}</td></tr>`}).join('');
+ return `<div class="top"><h2>Relatórios</h2><button data-x="exp-csv">Exportar IPs (CSV)</button></div>
+<div class="card sec"><h3>Consulta rápida por IP</h3><input id="qip" placeholder="Ex.: 192.168.10.4" value="${esc(qip)}" aria-label="Consultar IP" style="max-width:320px"><div id="qres">${consulta()}</div></div>
+<div class="cols"><div class="card"><h3 class="ph">Ocupação por rede</h3>${data.redes.map(usoRede).join('')||'<div class="vazio">Sem redes.</div>'}</div>
+<div class="card tw"><h3 class="ph">Resumo por empresa</h3>${data.empresas.length?`<table><thead><tr><th>Empresa</th><th>Redes</th><th>Ocupados</th><th>Livres</th><th>VPNs</th></tr></thead><tbody>${resumo}</tbody></table>`:'<div class="vazio">Sem empresas.</div>'}</div></div>
+<div class="card sec"><h3>IPs livres (${livres.length})</h3>${livres.map(i=>`<span class="b ok mono">${esc(i.endereco)}</span>`).join('')||'<span class="mut">Nenhum IP livre.</span>'}</div>`}
+function config(){return `<div class="top"><h2>Configurações</h2></div><div class="cols">
+<div class="card sec"><h3>Alertas</h3><label>Alertar quando a ocupação da rede chegar a (%)<input id="alerta" type="number" min="1" max="100" value="${cfg()}" style="max-width:120px"></label><div class="acts"><button class="p" data-x="cfg-save">Salvar</button><span id="ok" class="mut"></span></div></div>
+<div class="card sec"><h3>Dados</h3><p class="mut">Os registros ficam salvos neste navegador. Exporte um backup antes de limpar os dados do navegador.</p><div class="acts"><button data-x="exp-json">Exportar backup (JSON)</button><button data-x="seed">Restaurar exemplo</button><button class="d" data-x="clear">Apagar tudo</button></div></div></div>`}
+const csv=()=>'\uFEFF'+[['Empresa','Rede','IP','Status','Hostname','Serviço','VPN','Observação'],...data.ips.map(i=>{const r=rede(i.redeId),v=vpnAtiva(i.id);return [emp(r?.empresaId)?.nome||'',r?rotulo(r):'',i.endereco,i.status,i.hostname,i.servico,v?v.usuario:'Não',i.observacao]})].map(l=>l.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\n');
+function exportar(nome,txt){const d=$('#dlg');d.innerHTML=`<h3>Exportar ${esc(nome)}</h3><p class="mut">Copie o conteúdo ou baixe o arquivo.</p><textarea id="exp" rows="10" readonly class="mono"></textarea><div class="foot"><button data-x="cancel">Fechar</button><button data-x="copy">Copiar</button><button class="p" data-x="dl" data-n="${esc(nome)}">Baixar</button></div>`;$('#exp').value=txt;d.showModal()}
+function rota(){const h=location.hash.slice(1);tela=h==='painel'||h==='relatorios'||h==='config'||T[h]?h:'painel';busca='';render()}
+addEventListener('hashchange',rota);rota();
+</script>
+</body>
+</html>
